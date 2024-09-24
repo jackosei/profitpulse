@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-import SignUp from './SignUp';
-import SignIn from './SignIn';
-import OnboardingForm from './OnboardingForm';
-
-import './App.css'
+import SignUp from './components/SignUp';
+import SignIn from './components/SignIn';
+// import OnboardingForm from './OnboardingForm';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -24,7 +22,8 @@ const App = () => {
           <SignIn setUser={setUser} />
         </>
       ) : (
-        <OnboardingForm />
+        // <OnboardingForm />
+        <p>Onboarding Form...</p>
       )}
     </div>
   );
