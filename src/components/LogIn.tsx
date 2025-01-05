@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { logIn } from "../firebaseAuth";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
-const LogIn: React.FC = () => {
+export interface AuthProps {
+  handleAuthState: () => void; // The type for the handleAccessState function
+}
+
+const LogIn: React.FC<AuthProps> = ({ handleAuthState }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,7 +23,7 @@ const LogIn: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 400, margin: "0 auto", padding: 2 }}>
-      <Typography variant="h4" gutterBottom sx={{ color: "#2a2a2a" }}>
+      <Typography variant="h4" gutterBottom>
         Log In
       </Typography>
       <TextField
@@ -47,6 +51,29 @@ const LogIn: React.FC = () => {
       >
         Log In
       </Button>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifySelf: "center",
+          marginTop: 1,
+        }}
+      >
+        <Typography variant="subtitle2" className="m-4">
+          New User?
+        </Typography>
+        <Button
+          sx={{
+            "&:hover": {
+              backgroundColor: "transparent",
+              textDecoration: "underline",
+            },
+          }}
+          onClick={handleAuthState}
+        >
+          Create Account
+        </Button>
+      </Box>
     </Box>
   );
 };

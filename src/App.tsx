@@ -1,14 +1,23 @@
 import { useState } from "react";
 import SignUp from "./components/SignUp";
 import LogIn from "./components/LogIn";
-import { Button, Box } from "@mui/material";
+import { Box } from "@mui/material";
 
 const App: React.FC = () => {
-  const [isSignUp, setIsSignUp] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  function toggleAuthState() {
+    setIsSignUp((prev) => !prev);
+  }
 
   return (
-    <Box sx={{ textAlign: "center", padding: 2 }}>
-      <Button
+    <Box
+      sx={{
+        textAlign: "center",
+        padding: 2,
+      }}
+    >
+      {/* <Button
         onClick={() => setIsSignUp(true)}
         variant="contained"
         sx={{ margin: 1 }}
@@ -21,8 +30,12 @@ const App: React.FC = () => {
         sx={{ margin: 1 }}
       >
         Log In
-      </Button>
-      {isSignUp ? <SignUp /> : <LogIn />}
+      </Button> */}
+      {isSignUp ? (
+        <SignUp handleAuthState={toggleAuthState} />
+      ) : (
+        <LogIn handleAuthState={toggleAuthState} />
+      )}
     </Box>
   );
 };
