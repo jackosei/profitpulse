@@ -2,7 +2,10 @@ import { useState } from "react";
 import { signUp } from "../firebaseAuth";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
+// import { AuthProps } from "./LogIn";
+
 const SignUp: React.FC = () => {
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,13 +21,33 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 400, margin: "0 auto", padding: 2 }}>
-      <Typography variant="h4" gutterBottom sx={{ color: "#2a2a2a" }}>
+    <Box
+      sx={{
+        maxWidth: 400,
+        margin: "0 auto",
+        padding: 6,
+        backgroundColor: "background.paper",
+        borderRadius: 4,
+      }}
+    >
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ textAlign: "left", fontWeight: "bold" }}
+      >
         Sign Up
       </Typography>
       <TextField
         fullWidth
-        label="Email"
+        label="How would you like to be addressed?"
+        type="text"
+        margin="normal"
+        value={displayName}
+        onChange={(e) => setDisplayName(e.target.value)}
+      />
+      <TextField
+        fullWidth
+        label="Please enter your email"
         type="email"
         margin="normal"
         value={email}
@@ -32,7 +55,7 @@ const SignUp: React.FC = () => {
       />
       <TextField
         fullWidth
-        label="Password"
+        label="Please enter your password"
         type="password"
         margin="normal"
         value={password}
@@ -44,9 +67,32 @@ const SignUp: React.FC = () => {
         color="primary"
         fullWidth
         onClick={handleSignUp}
+        sx={{ marginTop: 2, fontWeight: "bold" }}
       >
-        Sign Up
+        Create Account
       </Button>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifySelf: "center",
+          marginTop: 1,
+        }}
+      >
+        <Typography variant="subtitle2" className="m-4">
+          Existing User?
+        </Typography>
+        <Button
+          sx={{
+            "&:hover": {
+              backgroundColor: "transparent",
+              textDecoration: "underline",
+            },
+          }}
+        >
+          Sign In
+        </Button>
+      </Box>
     </Box>
   );
 };

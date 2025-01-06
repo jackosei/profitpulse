@@ -11,12 +11,12 @@ import app from "./firebaseConfig";
 const auth = getAuth(app);
 
 // Function to handle user login
-export const signUp = async (email: string, password: string) => {
+export const signUp = async (firstName: string, lastName: string) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
-      email,
-      password
+      firstName,
+      lastName
     );
     return userCredential.user;
   } catch (error) {
