@@ -2,9 +2,9 @@ import { useState } from "react";
 import { signUp } from "../firebaseAuth";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
-import { AuthProps } from "./LogIn";
+// import { AuthProps } from "./LogIn";
 
-const SignUp: React.FC<AuthProps> = ({ handleAuthState }) => {
+const SignUp: React.FC = () => {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -89,7 +89,6 @@ const SignUp: React.FC<AuthProps> = ({ handleAuthState }) => {
               textDecoration: "underline",
             },
           }}
-          onClick={handleAuthState}
         >
           Sign In
         </Button>

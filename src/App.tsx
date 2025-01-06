@@ -1,42 +1,39 @@
-import { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+
+import { useEffect, useState } from "react";
+
 import SignUp from "./components/SignUp";
 import LogIn from "./components/LogIn";
-import { Box } from "@mui/material";
+import Dashboard from "./components/Dashboard";
 
 const App: React.FC = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  // const isAuthenticated = !!localStorage.getItem("userToken"); // Simple auth check
 
-  function toggleAuthState() {
-    setIsSignUp((prev) => !prev);
-  }
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check authentication status on app load
+    const userToken = localStorage.getItem("userToken");
+    setIsAuthenticated(!!userToken);
+  }, []);
 
   return (
-    <Box
-      sx={{
-        textAlign: "center",
-        padding: 2,
-      }}
-    >
-      {/* <Button
-        onClick={() => setIsSignUp(true)}
-        variant="contained"
-        sx={{ margin: 1 }}
-      >
-        Sign Up
-      </Button>
-      <Button
-        onClick={() => setIsSignUp(false)}
-        variant="outlined"
-        sx={{ margin: 1 }}
-      >
-        Log In
-      </Button> */}
-      {isSignUp ? (
-        <SignUp handleAuthState={toggleAuthState} />
-      ) : (
-        <LogIn handleAuthState={toggleAuthState} />
-      )}
-    </Box>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LogIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route
+          path="/dashboard"
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+    </Router>
   );
 };
 

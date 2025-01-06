@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import { logIn } from "../firebaseAuth";
 import { TextField, Button, Box, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
-export interface AuthProps {
-  handleAuthState: () => void; // The type for the handleAccessState function
-}
+// export interface AuthProps {
+//   handleAuthState: () => void; // The type for the handleAccessState function
+// }
 
-const LogIn: React.FC<AuthProps> = ({ handleAuthState }) => {
+const LogIn: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+
+  // After successful login:
+  localStorage.setItem("userToken", "sampleToken"); // Set token
+  navigate("/dashboard"); // Redirect to dashboard
 
   const handleLogIn = async () => {
     try {
@@ -69,7 +76,6 @@ const LogIn: React.FC<AuthProps> = ({ handleAuthState }) => {
               textDecoration: "underline",
             },
           }}
-          onClick={handleAuthState}
         >
           Create Account
         </Button>
