@@ -9,11 +9,11 @@ import { useEffect, useState } from "react";
 
 import SignUp from "./components/SignUp";
 import LogIn from "./components/LogIn";
-import Dashboard from "./components/Dashboard";
+// import Dashboard from "./components/Dashboard";
+import NavBar from "./components/NavBar";
+import DashboardGrid from "./components/DashboardGrid";
 
 const App: React.FC = () => {
-  // const isAuthenticated = !!localStorage.getItem("userToken"); // Simple auth check
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -24,12 +24,21 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      {isAuthenticated && <NavBar />} {/* Show NavBar if authenticated */}
       <Routes>
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route
           path="/dashboard"
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? (
+              <div>
+                <DashboardGrid />
+              </div>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
