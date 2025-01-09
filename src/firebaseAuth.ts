@@ -6,19 +6,47 @@ import {
   signOut,
 } from "firebase/auth";
 
-import app from "./firebaseConfig";
+import { app, db } from "./firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 
 const auth = getAuth(app);
 
-// Function to handle user login
-export const signUp = async (firstName: string, lastName: string) => {
+// Save user info to Firestore
+const saveUserInfo = async (
+  userId: string,
+  displayName: string,
+  email: string
+) => {
+  try {
+    await setDoc(doc(db, "users", userId), {
+      displayName,
+      email,
+      createdAt: new Date(),
+    });
+    console.log("User info saved!");
+  } catch (error) {
+    console.error("Error saving user info:", error);
+  }
+};
+
+// Function to handle user signup
+export const signUp = async (
+  email: string,
+  password: string,
+  displayName: string
+) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
-      firstName,
-      lastName
+      email,
+      password
     );
-    return userCredential.user;
+    const user = userCredential.user;
+
+    // Call saveUserInfo to save user details in Firestore
+    await saveUserInfo(user.uid, displayName, user.email as string);
+
+    return user;
   } catch (error) {
     throw error;
   }

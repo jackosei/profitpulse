@@ -24,7 +24,13 @@ const LogIn: React.FC = () => {
       alert("Login successful!");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (err.code === "auth/invalid-email") {
+        errorMessage = "The email address is not valid.";
+      } else if (err.code === "auth/email-already-in-use") {
+        errorMessage = "The email address is already in use.";
+      }
+      setError(errorMessage);
     }
   };
 

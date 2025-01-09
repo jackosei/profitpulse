@@ -10,13 +10,28 @@ const SignUp: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSignUp = async () => {
+  const handleSignUp = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    // Simple validation to check if all fields are filled
+    if (!displayName || !email || !password) {
+      setError("Please fill all fields correctly.");
+      return;
+    }
+
     try {
-      await signUp(email, password);
+      await signUp(email, password, displayName);
       alert("Signup successful!");
+      // TODO: redirect or update state here after successful signup
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (err.code === "auth/invalid-email") {
+        errorMessage = "The email address is not valid.";
+      } else if (err.code === "auth/email-already-in-use") {
+        errorMessage = "The email address is already in use.";
+      }
+      setError(errorMessage);
     }
   };
 
@@ -37,40 +52,42 @@ const SignUp: React.FC = () => {
       >
         Sign Up
       </Typography>
-      <TextField
-        fullWidth
-        label="How would you like to be addressed?"
-        type="text"
-        margin="normal"
-        value={displayName}
-        onChange={(e) => setDisplayName(e.target.value)}
-      />
-      <TextField
-        fullWidth
-        label="Please enter your email"
-        type="email"
-        margin="normal"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <TextField
-        fullWidth
-        label="Please enter your password"
-        type="password"
-        margin="normal"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      {error && <Typography color="error">{error}</Typography>}
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        onClick={handleSignUp}
-        sx={{ marginTop: 2, fontWeight: "bold" }}
-      >
-        Create Account
-      </Button>
+      <form onSubmit={handleSignUp}>
+        <TextField
+          fullWidth
+          label="How would you like to be addressed?"
+          type="text"
+          margin="normal"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+        <TextField
+          fullWidth
+          label="Please enter your email"
+          type="email"
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          fullWidth
+          label="Please enter your password"
+          type="password"
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {error && <Typography color="error">{error}</Typography>}
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          type="submit" // Change to type submit
+          sx={{ marginTop: 2, fontWeight: "bold" }}
+        >
+          Create Account
+        </Button>
+      </form>
       <Box
         sx={{
           display: "flex",
