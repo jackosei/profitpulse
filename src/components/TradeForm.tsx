@@ -11,17 +11,28 @@ import {
   FormControl,
   SelectChangeEvent,
 } from "@mui/material";
+import { db } from "../firebaseConfig";
+import { addDoc, collection } from "firebase/firestore";
+
+interface TradeFormData {
+  date: string;
+  pair: string;
+  profitLossPct: number;
+  outcome: string;
+}
 
 const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TradeFormData>({
     date: "",
     pair: "",
     profitLossPct: 0,
     outcome: "win",
   });
+
+  const [error, setError] = useState<string>(""); // State to hold error message
 
   const handleInputChange = (
     event:
@@ -32,9 +43,26 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
     setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log("Submitting trade:", formData);
-    // TODO: Add Firebase integration to save trade
+  const handleSubmit = async () => {
+    // Simple validation to check if all fields are filled
+    if (!formData.date || !formData.pair || isNaN(formData.profitLossPct)) {
+      setError("Please fill all fields correctly.");
+      return;
+    }
+
+    setError(""); // Reset error if form is valid
+
+    try {
+      // Add the trade data to Firestore
+      await addDoc(collection(db, "trades"), formData);
+      alert("Trade saved successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error saving trade:", error);
+      alert("Failed to save trade. Please try again.");
+    }
+
+    setFormData({ date: "", pair: "", profitLossPct: 0, outcome: "win" });
     onClose();
   };
 
@@ -88,6 +116,8 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
             <MenuItem value="loss">Loss</MenuItem>
           </Select>
         </FormControl>
+        {error && <p style={{ color: "red" }}>{error}</p>}{" "}
+        {/* Display error message */}
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Save Trade
         </Button>
