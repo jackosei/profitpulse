@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { signUp } from "../firebaseAuth";
+import { useAuth } from "../context/AuthContext";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
 // import { AuthProps } from "./LogIn";
 
 const SignUp: React.FC = () => {
+  const { signUp } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

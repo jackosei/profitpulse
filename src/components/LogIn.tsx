@@ -1,36 +1,41 @@
 import React, { useState } from "react";
-import { logIn } from "../firebaseAuth";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
-// export interface AuthProps {
-//   handleAuthState: () => void; // The type for the handleAccessState function
-// }
+import { useAuth } from "../context/AuthContext";
 
 const LogIn: React.FC = () => {
+  const { logIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // After successful login:
-  localStorage.setItem("userToken", "sampleToken"); // Set token
-  navigate("/dashboard"); // Redirect to dashboard
-
   const handleLogIn = async () => {
+    if (!email || !password) {
+      setError("Please enter both email and password.");
+      return;
+    }
+
+    setLoading(true);
     try {
       await logIn(email, password);
+      localStorage.setItem("userToken", "sampleToken"); // Set token after login
+      navigate("/dashboard");
       alert("Login successful!");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       let errorMessage = "An unexpected error occurred. Please try again.";
       if (err.code === "auth/invalid-email") {
         errorMessage = "The email address is not valid.";
-      } else if (err.code === "auth/email-already-in-use") {
-        errorMessage = "The email address is already in use.";
+      } else if (err.code === "auth/user-not-found") {
+        errorMessage = "User not found.";
+      } else if (err.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password.";
       }
       setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,8 +66,9 @@ const LogIn: React.FC = () => {
         color="primary"
         fullWidth
         onClick={handleLogIn}
+        disabled={loading}
       >
-        Log In
+        {loading ? "Logging in..." : "Log In"}
       </Button>
       <Box
         sx={{
@@ -82,6 +88,7 @@ const LogIn: React.FC = () => {
               textDecoration: "underline",
             },
           }}
+          onClick={() => navigate("/signup")}
         >
           Create Account
         </Button>
