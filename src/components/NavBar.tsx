@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -11,10 +11,12 @@ import {
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import TradeForm from "./TradeForm";
+import { useAuth } from "../context/AuthContext";
 
 const NavBar: React.FC = () => {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [tradeFormOpen, setTradeFormOpen] = useState(false);
+  const { logOut } = useAuth();
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchor(event.currentTarget);
@@ -22,6 +24,16 @@ const NavBar: React.FC = () => {
 
   const handleMenuClose = () => {
     setMenuAnchor(null);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logOut(); // Call the logOut method from AuthContext
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      handleMenuClose();
+    }
   };
 
   return (
@@ -46,7 +58,7 @@ const NavBar: React.FC = () => {
           onClose={handleMenuClose}
         >
           <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-          <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+          <MenuItem onClick={handleSignOut}>Logout</MenuItem>
         </Menu>
         <TradeForm
           open={tradeFormOpen}

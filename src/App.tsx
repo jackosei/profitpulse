@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import LogIn from "./components/LogIn";
 import SignUp from "./components/SignUp";
 import Dashboard from "./components/Dashboard";
+import PulseDashboard from "./components/PulseDashboard";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -25,18 +26,33 @@ const App: React.FC = () => {
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
 
-        {/* Protected Route */}
+        {/* Protected Routes */}
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/pulse/:id"
+          element={
+            <ProtectedRoute>
+              <PulseDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Redirect unknown paths to login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Redirect unknown paths to "/" if authenticated or "/login" otherwise */}
+        <Route
+          path="*"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/" replace />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </AuthProvider>
   );
