@@ -1,48 +1,60 @@
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
-
-import { useEffect, useState } from "react";
-
-import SignUp from "./components/SignUp";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import LogIn from "./components/LogIn";
-// import Dashboard from "./components/Dashboard";
-import NavBar from "./components/NavBar";
-import DashboardGrid from "./components/DashboardGrid";
+import SignUp from "./components/SignUp";
+import Dashboard from "./components/Dashboard";
+import PulseDashboard from "./components/PulseDashboard";
+
+// Protected Route Component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Check authentication status on app load
-    const userToken = localStorage.getItem("userToken");
-    setIsAuthenticated(!!userToken);
-  }, []);
-
   return (
-    <Router>
-      {isAuthenticated && <NavBar />} {/* Show NavBar if authenticated */}
+    <AuthProvider>
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
+
+        {/* Protected Routes */}
         <Route
-          path="/dashboard"
+          path="/"
           element={
-            isAuthenticated ? (
-              <div>
-                <DashboardGrid />
-              </div>
-            ) : (
-              <Navigate to="/login" />
-            )
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route
+          path="/pulse/:id"
+          element={
+            <ProtectedRoute>
+              <PulseDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirect unknown paths to "/" if authenticated or "/login" otherwise */}
+        <Route
+          path="*"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/" replace />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-    </Router>
+    </AuthProvider>
   );
 };
 
