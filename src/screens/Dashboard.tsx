@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { db } from "../firebaseConfig";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import {
   Typography,
   Paper,
@@ -11,20 +13,20 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Box,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import NavBar from "./NavBar";
-import { db } from "../firebaseConfig"; // Import your Firebase configuration
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import AddPulseModal from "../components/AddPulseModal";
+import UtilityButton from "../components/UtilityButton";
 
 // Define the shape of a Pulse object
 interface Pulse {
   id: string;
-  name: string;
-  trades: number;
-  profit: number;
+  description: string;
+  pair: string;
 }
 
 interface Statistics {
@@ -45,6 +47,7 @@ const Dashboard: React.FC = () => {
     profitGainLoss: 0,
   });
   const [isLoadingPulses, setIsLoadingPulses] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   // Fetch pulses and stats from Firestore
   useEffect(() => {
@@ -65,7 +68,7 @@ const Dashboard: React.FC = () => {
     };
 
     const fetchStats = async () => {
-      const statsDoc = doc(db, "stats", "summary"); // Adjust path if necessary
+      const statsDoc = doc(db, "stats", "summary");
       const statsSnapshot = await getDoc(statsDoc);
       if (statsSnapshot.exists()) {
         setStats(statsSnapshot.data() as Statistics);
@@ -78,11 +81,14 @@ const Dashboard: React.FC = () => {
     fetchStats();
   }, []);
 
+  const handlePulseAdded = (newPulse: Pulse) => {
+    setPulses((prevPulses) => [...prevPulses, newPulse]);
+  };
+
   return (
     <>
       {/* Navigation */}
       <NavBar />
-
       {/* Main Content */}
       <Grid container spacing={3} sx={{ p: 3 }}>
         {/* Header */}
@@ -115,9 +121,22 @@ const Dashboard: React.FC = () => {
 
         {/* Pulses Table */}
         <Grid size={12}>
-          <Typography variant="h5" gutterBottom>
-            Pulses
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Pulses
+            </Typography>
+            <UtilityButton
+              handleClick={setIsModalOpen}
+              buttonText="Add Pulse"
+            />
+          </Box>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -134,11 +153,12 @@ const Dashboard: React.FC = () => {
                 <TableBody>
                   {pulses.map((pulse) => (
                     <TableRow key={pulse.id}>
-                      <TableCell>{pulse.name}</TableCell>
-                      <TableCell align="right">{pulse.trades}</TableCell>
+                      <TableCell>{pulse.pair}</TableCell>
+                      <TableCell>{pulse.description}</TableCell>
+                      {/* <TableCell align="right">{pulse.trades}</TableCell>
                       <TableCell align="right">
                         {pulse.profit.toFixed(2)}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell align="right">
                         <Button
                           variant="contained"
@@ -166,6 +186,13 @@ const Dashboard: React.FC = () => {
           </TableContainer>
         </Grid>
       </Grid>
+
+      {/* Add Pulse Modal */}
+      <AddPulseModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onPulseAdded={handlePulseAdded}
+      />
     </>
   );
 };
