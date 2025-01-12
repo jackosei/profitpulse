@@ -13,10 +13,10 @@ import {
 } from "@mui/material";
 import { db } from "../firebaseConfig";
 import { addDoc, collection } from "firebase/firestore";
+import { TradeOutcomes } from "../lib/constant";
 
 interface TradeFormData {
   date: string;
-  pair: string;
   profitLossPct: number;
   outcome: string;
 }
@@ -27,7 +27,6 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
 }) => {
   const [formData, setFormData] = useState<TradeFormData>({
     date: "",
-    pair: "",
     profitLossPct: 0,
     outcome: "win",
   });
@@ -45,7 +44,7 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
 
   const handleSubmit = async () => {
     // Simple validation to check if all fields are filled
-    if (!formData.date || !formData.pair || isNaN(formData.profitLossPct)) {
+    if (!formData.date || isNaN(formData.profitLossPct)) {
       setError("Please fill all fields correctly.");
       return;
     }
@@ -62,7 +61,7 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
       alert("Failed to save trade. Please try again.");
     }
 
-    setFormData({ date: "", pair: "", profitLossPct: 0, outcome: "win" });
+    setFormData({ date: "", profitLossPct: 0, outcome: "win" });
     onClose();
   };
 
@@ -81,20 +80,6 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
           }
           InputLabelProps={{ shrink: true }}
         />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Pair/Account</InputLabel>
-          <Select
-            name="pair"
-            value={formData.pair}
-            onChange={(event) =>
-              handleInputChange(event as SelectChangeEvent<string>)
-            }
-          >
-            <MenuItem value="EURUSD">EUR/USD</MenuItem>
-            <MenuItem value="GBPUSD">GBP/USD</MenuItem>
-            <MenuItem value="USDJPY">USD/JPY</MenuItem>
-          </Select>
-        </FormControl>
         <TextField
           label="Profit/Loss %"
           name="profitLossPct"
@@ -112,8 +97,9 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
               handleInputChange(event as SelectChangeEvent<string>)
             }
           >
-            <MenuItem value="win">Win</MenuItem>
-            <MenuItem value="loss">Loss</MenuItem>
+            {TradeOutcomes.map((outcome) => (
+              <MenuItem value={outcome.toLowerCase()}>{outcome}</MenuItem>
+            ))}
           </Select>
         </FormControl>
         {error && <p style={{ color: "red" }}>{error}</p>}{" "}

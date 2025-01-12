@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import LogIn from "./components/LogIn";
-import SignUp from "./components/SignUp";
-import Dashboard from "./components/Dashboard";
-import PulseDashboard from "./components/PulseDashboard";
+import LogIn from "./screens/LogIn";
+import SignUp from "./screens/SignUp";
+import Dashboard from "./screens/Dashboard";
+import PulseDashboard from "./screens/PulseDashboard";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
