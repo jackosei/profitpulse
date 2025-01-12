@@ -47,7 +47,7 @@ const NavBar: React.FC = () => {
           color="inherit"
           onClick={() => setTradeFormOpen(true)}
         >
-          +Trade
+          Trade
         </Button>
         <IconButton color="inherit" onClick={handleMenuOpen}>
           <AccountCircle />
