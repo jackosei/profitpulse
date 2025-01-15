@@ -1,10 +1,17 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { useNavigate } from "react-router-dom";
-import { logIn, signUp, logOut } from "../firebaseAuth";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { logIn, signUp, logOut, auth } from "../firebaseAuth";
 
 type AuthContextType = {
   isAuthenticated: boolean;
-  user: { email: string; displayName: string | null };
+  user: User | null;
   logIn: (email: string, password: string) => Promise<void>;
   signUp: (
     email: string,
@@ -19,29 +26,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{
-    email: string;
-    displayName: string | null;
-  }>({
-    email: "",
-    displayName: null,
-  });
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser); // Store the full Firebase User object
+      setIsAuthenticated(!!currentUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleLogIn = async (email: string, password: string) => {
     try {
       const userData = await logIn(email, password);
-      setUser({
-        email: userData.email as string,
-        displayName: userData.displayName,
-      });
+      setUser(userData); // Store the full Firebase User object
       setIsAuthenticated(true);
-      localStorage.setItem("userToken", userData.uid); // Store token in localStorage
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      throw error; // Rethrow to handle errors in the component
+      throw error;
     }
   };
 
@@ -52,28 +60,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   ) => {
     try {
       const userData = await signUp(email, password, displayName);
-      setUser({ email: userData.email as string, displayName });
+      setUser(userData); // Store the full Firebase User object
       setIsAuthenticated(true);
-      localStorage.setItem("userToken", userData.uid);
       navigate("/dashboard");
     } catch (error) {
       console.error("Signup failed:", error);
-      throw error; // Rethrow to handle errors in the component
+      throw error;
     }
   };
 
   const handleLogOut = async () => {
     try {
       await logOut();
-      setUser({ email: "", displayName: null });
+      setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem("userToken");
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
-      throw error; // Rethrow to handle errors if needed
+      throw error;
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider

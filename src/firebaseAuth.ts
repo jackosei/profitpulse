@@ -9,7 +9,7 @@ import {
 import { app, db } from "./firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
 
-const auth = getAuth(app);
+export const auth = getAuth(app);
 
 // Save user info to Firestore
 const saveUserInfo = async (

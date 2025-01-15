@@ -1,6 +1,7 @@
 import React from "react";
 import Grid from "@mui/material/Grid2";
 import Paper from "@mui/material/Paper";
+import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 
 import { useParams } from "react-router-dom";
@@ -42,11 +43,32 @@ const PulseDashboard: React.FC = () => {
   }, [id]);
 
   if (isLoading) {
-    return <Typography>Loading Pulse Data...</Typography>;
+    return (
+      <Grid
+        container
+        justifyContent="center"
+        alignItems="center"
+        sx={{ height: "100vh" }}
+      >
+        <CircularProgress />
+      </Grid>
+    );
   }
 
   if (!pulse) {
-    return <Typography>Pulse not found</Typography>;
+    return (
+      <Grid
+        container
+        justifyContent="center"
+        alignItems="center"
+        sx={{ height: "100vh" }}
+      >
+        <Typography variant="h5" color="error">
+          Oops! We couldn't find the pulse you were looking for. Please try
+          again later.
+        </Typography>
+      </Grid>
+    );
   }
 
   return (
