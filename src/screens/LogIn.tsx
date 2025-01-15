@@ -21,11 +21,9 @@ const LogIn: React.FC = () => {
     try {
       await logIn(email, password);
       localStorage.setItem("userToken", "sampleToken"); // Set token after login
-      navigate("/dashboard");
-      alert("Login successful!");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      let errorMessage = "An unexpected error occurred. Please try again.";
+      let errorMessage = "You entered an invalid credential.";
       if (err.code === "auth/invalid-email") {
         errorMessage = "The email address is not valid.";
       } else if (err.code === "auth/user-not-found") {
