@@ -1,122 +1,127 @@
 import React from "react";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
+
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
+import { Pulse, Statistics } from "../lib/types";
 
 const PulseDashboard: React.FC = () => {
-  const theme = useTheme();
+  const { id } = useParams<{ id: string }>();
+  const [pulse, setPulse] = useState<Pulse | null>(null);
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPulse = async () => {
+      if (!id) return;
+
+      try {
+        const pulseDoc = doc(db, "pulses", id);
+        const pulseSnapshot = await getDoc(pulseDoc);
+
+        if (pulseSnapshot.exists()) {
+          setPulse({
+            ...(pulseSnapshot.data() as Pulse),
+            id: pulseSnapshot.id,
+          });
+        } else {
+          console.error("Pulse not found");
+        }
+      } catch (error) {
+        console.error("Error fetching pulse:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPulse();
+  }, [id]);
+
+  if (isLoading) {
+    return <Typography>Loading Pulse Data...</Typography>;
+  }
+
+  if (!pulse) {
+    return <Typography>Pulse not found</Typography>;
+  }
 
   return (
     <Grid container spacing={2}>
-      {/* Row 1: Four columns */}
-      <Grid item xs={12} sm={6} md={3}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Average Win $
-          </Typography>
-          <Typography variant="body1" color={theme.palette.text.secondary}>
-            $500
-          </Typography>
-        </Paper>
+      {/* Pulse Header */}
+      <Grid size={12}>
+        <Typography variant="h4">Pulse: {pulse.pair}</Typography>
+        <Typography variant="subtitle1" color="textSecondary">
+          {pulse.description}
+        </Typography>
       </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Average Loss $
+
+      {/* Statistics Section */}
+      {statistics ? (
+        <>
+          <Grid size={3}>
+            <Paper sx={{ padding: 2, textAlign: "center" }}>
+              <Typography variant="h6">Total Trades</Typography>
+              <Typography variant="body1">{statistics.totalTrades}</Typography>
+            </Paper>
+          </Grid>
+          <Grid size={3}>
+            <Paper sx={{ padding: 2, textAlign: "center" }}>
+              <Typography variant="h6">Wins</Typography>
+              <Typography variant="body1">{statistics.wins}</Typography>
+            </Paper>
+          </Grid>
+          <Grid size={3}>
+            <Paper sx={{ padding: 2, textAlign: "center" }}>
+              <Typography variant="h6">Losses</Typography>
+              <Typography variant="body1">{statistics.losses}</Typography>
+            </Paper>
+          </Grid>
+          <Grid size={3}>
+            <Paper sx={{ padding: 2, textAlign: "center" }}>
+              <Typography variant="h6">Strike Rate</Typography>
+              <Typography variant="body1">{statistics.strikeRate}%</Typography>
+            </Paper>
+          </Grid>
+        </>
+      ) : (
+        <Grid size={12}>
+          <Typography variant="body1" color="textSecondary">
+            Statistics data is not available.
           </Typography>
-          <Typography variant="body1" color={theme.palette.text.secondary}>
-            $300
-          </Typography>
-        </Paper>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Strike Rate %
-          </Typography>
-          <Typography variant="body1" color={theme.palette.text.secondary}>
-            65%
-          </Typography>
-        </Paper>
-      </Grid>
-      <Grid item xs={12} sm={6} md={3}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Gain/Loss (Last 100 Trades)
-          </Typography>
-          <Typography variant="body1" color={theme.palette.text.secondary}>
-            $2000
+        </Grid>
+      )}
+
+      {/* Summary Section */}
+      <Grid size={12}>
+        <Paper sx={{ padding: 2 }}>
+          <Typography variant="h6">Summary</Typography>
+          <Typography variant="body1" color="textSecondary">
+            This section provides an overview of the pulse's performance.
           </Typography>
         </Paper>
       </Grid>
 
-      {/* Row 2: Two columns */}
-      <Grid item xs={12} md={6}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Summary
-          </Typography>
-          <Typography variant="body1" color={theme.palette.text.secondary}>
-            Here's a brief summary of your performance.
-          </Typography>
-        </Paper>
-      </Grid>
-      <Grid item xs={12} md={6}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Profit Chart
-          </Typography>
-          <Typography variant="body1" color={theme.palette.text.secondary}>
-            Chart placeholder
+      {/* Profit Chart */}
+      <Grid size={12}>
+        <Paper sx={{ padding: 2 }}>
+          <Typography variant="h6">Profit Chart</Typography>
+          <Typography variant="body1" color="textSecondary">
+            Chart placeholder.
           </Typography>
         </Paper>
       </Grid>
 
-      {/* Row 3: Placeholder */}
-      <Grid item xs={12}>
-        <Paper
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            padding: 2,
-          }}
-        >
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            Paginated Trades Table
+      {/* Paginated Trades Table */}
+      <Grid size={12}>
+        <Paper sx={{ padding: 2 }}>
+          <Typography variant="h6">Trades</Typography>
+          <Typography variant="body1" color="textSecondary">
+            Include columns such as Trade Date, Pair, Profit/Loss, and Notes.
+            Paginated
           </Typography>
         </Paper>
       </Grid>
