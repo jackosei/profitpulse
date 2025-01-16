@@ -9,5 +9,5 @@ export interface Statistics {
   wins: number;
   losses: number;
   strikeRate: number;
-  profitGainLoss: number;
+  profitGainLoss?: number;
 }

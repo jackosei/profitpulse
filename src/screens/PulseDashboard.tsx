@@ -1,28 +1,37 @@
-import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig";
+import { Pulse, Statistics } from "../lib/types";
+import NavBar from "../components/NavBar";
+import TradeForm from "../components/TradeForm";
+import UtilityButton from "../components/UtilityButton";
 import Grid from "@mui/material/Grid2";
 import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
-
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
-import { Pulse, Statistics } from "../lib/types";
+import Button from "@mui/material/Button";
 
 const PulseDashboard: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: pulseId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [tradeFormOpen, setTradeFormOpen] = useState(false);
 
   useEffect(() => {
     const fetchPulse = async () => {
-      if (!id) return;
+      if (!pulseId) return;
+      setIsLoading(true);
 
       try {
-        const pulseDoc = doc(db, "pulses", id);
-        const pulseSnapshot = await getDoc(pulseDoc);
+        const pulseDocRef = doc(db, "pulses", pulseId);
+        const tradesCollectionRef = collection(db, `pulses/${pulseId}/trades`);
+        const [pulseSnapshot, tradesSnapshot] = await Promise.all([
+          getDoc(pulseDocRef),
+          getDocs(tradesCollectionRef),
+        ]);
 
         if (pulseSnapshot.exists()) {
           setPulse({
@@ -32,15 +41,22 @@ const PulseDashboard: React.FC = () => {
         } else {
           console.error("Pulse not found");
         }
+
+        const trades = tradesSnapshot.docs.map((doc) => doc.data());
+        const totalTrades = trades.length;
+        const wins = trades.filter((trade) => trade.outcome === "win").length;
+        const losses = totalTrades - wins;
+        const strikeRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
+
+        setStatistics({ totalTrades, wins, losses, strikeRate });
       } catch (error) {
-        console.error("Error fetching pulse:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchPulse();
-  }, [id]);
+  }, [pulseId]);
 
   if (isLoading) {
     return (
@@ -72,43 +88,44 @@ const PulseDashboard: React.FC = () => {
   }
 
   return (
-    <Grid container spacing={2}>
-      {/* Pulse Header */}
-      <Grid size={12}>
+    <Grid container spacing={2} sx={{ p: 3 }}>
+      <NavBar />
+      <Grid
+        size={12}
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <Typography variant="h4">Pulse: {pulse.pair}</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/")}
+        >
+          Back to Dashboard
+        </Button>
+      </Grid>
+      <Grid size={12}>
         <Typography variant="subtitle1" color="textSecondary">
           {pulse.description}
         </Typography>
       </Grid>
 
-      {/* Statistics Section */}
       {statistics ? (
-        <>
-          <Grid size={3}>
-            <Paper sx={{ padding: 2, textAlign: "center" }}>
-              <Typography variant="h6">Total Trades</Typography>
-              <Typography variant="body1">{statistics.totalTrades}</Typography>
-            </Paper>
-          </Grid>
-          <Grid size={3}>
-            <Paper sx={{ padding: 2, textAlign: "center" }}>
-              <Typography variant="h6">Wins</Typography>
-              <Typography variant="body1">{statistics.wins}</Typography>
-            </Paper>
-          </Grid>
-          <Grid size={3}>
-            <Paper sx={{ padding: 2, textAlign: "center" }}>
-              <Typography variant="h6">Losses</Typography>
-              <Typography variant="body1">{statistics.losses}</Typography>
-            </Paper>
-          </Grid>
-          <Grid size={3}>
-            <Paper sx={{ padding: 2, textAlign: "center" }}>
-              <Typography variant="h6">Strike Rate</Typography>
-              <Typography variant="body1">{statistics.strikeRate}%</Typography>
-            </Paper>
-          </Grid>
-        </>
+        ["Total Trades", "Wins", "Losses", "Strike Rate"].map(
+          (label, index) => (
+            <Grid key={index} size={3}>
+              <Paper sx={{ padding: 2, textAlign: "center" }}>
+                <Typography variant="h6">{label}</Typography>
+                <Typography variant="body1">
+                  {label === "Strike Rate"
+                    ? `${statistics[label.toLowerCase().replace(" ", "")]}%`
+                    : statistics[label.toLowerCase().replace(" ", "")]}
+                </Typography>
+              </Paper>
+            </Grid>
+          )
+        )
       ) : (
         <Grid size={12}>
           <Typography variant="body1" color="textSecondary">
@@ -117,7 +134,6 @@ const PulseDashboard: React.FC = () => {
         </Grid>
       )}
 
-      {/* Summary Section */}
       <Grid size={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h6">Summary</Typography>
@@ -127,7 +143,6 @@ const PulseDashboard: React.FC = () => {
         </Paper>
       </Grid>
 
-      {/* Profit Chart */}
       <Grid size={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h6">Profit Chart</Typography>
@@ -137,7 +152,6 @@ const PulseDashboard: React.FC = () => {
         </Paper>
       </Grid>
 
-      {/* Paginated Trades Table */}
       <Grid size={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h6">Trades</Typography>
@@ -147,6 +161,8 @@ const PulseDashboard: React.FC = () => {
           </Typography>
         </Paper>
       </Grid>
+      <UtilityButton handleClick={setTradeFormOpen} buttonText="Add Trade" />
+      <TradeForm open={tradeFormOpen} onClose={() => setTradeFormOpen(false)} />
     </Grid>
   );
 };

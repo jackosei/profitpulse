@@ -24,7 +24,7 @@ import Grid from "@mui/material/Grid2";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ConfirmationModal from "../components/ConfirmationModal";
-import NavBar from "./NavBar";
+import NavBar from "../components/NavBar";
 import AddPulseModal from "../components/AddPulseModal";
 import UtilityButton from "../components/UtilityButton";
 import { useNavigate } from "react-router-dom";
