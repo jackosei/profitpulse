@@ -1,4 +1,4 @@
-export const TradeOutcomes = ["Win", "Loss", "Breakeven"];
+export const TradeOutcomes = ["Win", "Loss", "Break-even"];
 
 export const TradePairs = [
   { name: "EURUSD", displayName: "EUR/USD" },
