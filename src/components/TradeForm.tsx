@@ -17,21 +17,24 @@ import { TradeOutcomes } from "../lib/constant";
 
 interface TradeFormData {
   date: string;
+  riskPct: number;
   profitLossPct: number;
   outcome: string;
 }
 
-const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
-  open,
-  onClose,
-}) => {
+const TradeForm: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  pulseId: string | null;
+}> = ({ open, onClose, pulseId }) => {
   const [formData, setFormData] = useState<TradeFormData>({
     date: "",
+    riskPct: 0,
     profitLossPct: 0,
     outcome: "win",
   });
 
-  const [error, setError] = useState<string>(""); // State to hold error message
+  const [error, setError] = useState<string>("");
 
   const handleInputChange = (
     event:
@@ -43,17 +46,21 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
   };
 
   const handleSubmit = async () => {
-    // Simple validation to check if all fields are filled
+    if (!pulseId) {
+      setError("Error: No active pulse found.");
+      return;
+    }
+
     if (!formData.date || isNaN(formData.profitLossPct)) {
       setError("Please fill all fields correctly.");
       return;
     }
 
-    setError(""); // Reset error if form is valid
+    setError("");
 
     try {
-      // Add the trade data to Firestore
-      await addDoc(collection(db, "trades"), formData);
+      // Save the trade inside the pulse's "trades" subcollection
+      await addDoc(collection(db, `pulses/${pulseId}/trades`), formData);
       alert("Trade saved successfully!");
       onClose();
     } catch (error) {
@@ -61,7 +68,7 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
       alert("Failed to save trade. Please try again.");
     }
 
-    setFormData({ date: "", profitLossPct: 0, outcome: "win" });
+    setFormData({ date: "", riskPct: 0, profitLossPct: 0, outcome: "win" });
     onClose();
   };
 
@@ -75,10 +82,16 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
           type="date"
           fullWidth
           value={formData.date}
-          onChange={(event) =>
-            handleInputChange(event as SelectChangeEvent<string>)
-          }
+          onChange={handleInputChange}
           InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          label="Risk %"
+          name="riskPct"
+          type="number"
+          fullWidth
+          value={formData.riskPct}
+          onChange={handleInputChange}
         />
         <TextField
           label="Profit/Loss %"
@@ -93,17 +106,16 @@ const TradeForm: React.FC<{ open: boolean; onClose: () => void }> = ({
           <Select
             name="outcome"
             value={formData.outcome}
-            onChange={(event) =>
-              handleInputChange(event as SelectChangeEvent<string>)
-            }
+            onChange={handleInputChange}
           >
             {TradeOutcomes.map((outcome) => (
-              <MenuItem value={outcome.toLowerCase()}>{outcome}</MenuItem>
+              <MenuItem key={outcome} value={outcome.toLowerCase()}>
+                {outcome}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
-        {error && <p style={{ color: "red" }}>{error}</p>}{" "}
-        {/* Display error message */}
+        {error && <p style={{ color: "red" }}>{error}</p>}
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Save Trade
         </Button>

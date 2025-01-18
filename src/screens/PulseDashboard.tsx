@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { Pulse, Statistics } from "../lib/types";
+import { Pulse, Trade } from "../lib/types";
 import NavBar from "../components/NavBar";
 import TradeForm from "../components/TradeForm";
 import UtilityButton from "../components/UtilityButton";
@@ -16,7 +16,7 @@ const PulseDashboard: React.FC = () => {
   const { id: pulseId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [pulse, setPulse] = useState<Pulse | null>(null);
-  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tradeFormOpen, setTradeFormOpen] = useState(false);
 
@@ -28,11 +28,9 @@ const PulseDashboard: React.FC = () => {
       try {
         const pulseDocRef = doc(db, "pulses", pulseId);
         const tradesCollectionRef = collection(db, `pulses/${pulseId}/trades`);
-        const [pulseSnapshot, tradesSnapshot] = await Promise.all([
-          getDoc(pulseDocRef),
-          getDocs(tradesCollectionRef),
-        ]);
 
+        // Fetch Pulse Data
+        const pulseSnapshot = await getDoc(pulseDocRef);
         if (pulseSnapshot.exists()) {
           setPulse({
             ...(pulseSnapshot.data() as Pulse),
@@ -42,13 +40,13 @@ const PulseDashboard: React.FC = () => {
           console.error("Pulse not found");
         }
 
-        const trades = tradesSnapshot.docs.map((doc) => doc.data());
-        const totalTrades = trades.length;
-        const wins = trades.filter((trade) => trade.outcome === "win").length;
-        const losses = totalTrades - wins;
-        const strikeRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-
-        setStatistics({ totalTrades, wins, losses, strikeRate });
+        // Fetch Trades Data
+        const tradesSnapshot = await getDocs(tradesCollectionRef);
+        const tradeList = tradesSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Trade[];
+        setTrades(tradeList);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -111,7 +109,7 @@ const PulseDashboard: React.FC = () => {
         </Typography>
       </Grid>
 
-      {statistics ? (
+      {/* {statistics ? (
         ["Total Trades", "Wins", "Losses", "Strike Rate"].map(
           (label, index) => (
             <Grid key={index} size={3}>
@@ -132,7 +130,7 @@ const PulseDashboard: React.FC = () => {
             Statistics data is not available.
           </Typography>
         </Grid>
-      )}
+      )} */}
 
       <Grid size={12}>
         <Paper sx={{ padding: 2 }}>
@@ -162,7 +160,11 @@ const PulseDashboard: React.FC = () => {
         </Paper>
       </Grid>
       <UtilityButton handleClick={setTradeFormOpen} buttonText="Add Trade" />
-      <TradeForm open={tradeFormOpen} onClose={() => setTradeFormOpen(false)} />
+      <TradeForm
+        open={tradeFormOpen}
+        onClose={() => setTradeFormOpen(false)}
+        pulseId={pulse?.id ?? null}
+      />
     </Grid>
   );
 };
